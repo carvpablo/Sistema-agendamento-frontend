@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import ServiceList from "../components/ServiceList";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 export interface Service {
   id: string;
@@ -8,14 +8,20 @@ export interface Service {
   description?: string | null;
   durationMinutes: number;
   price: number;
+  professionalServices?: {
+    professional: {
+      id: string;
+      name: string;
+      email?: string;
+    };
+  }[];
 }
 
 async function ServicesFetcher() {
   "use cache";
-  cacheLife({ stale: 60, expire: 3600 });
-  const response = await fetch("http://localhost:3000/services", {
-    cache: "no-store",
-  });
+  cacheLife({ stale: 300, revalidate: 600, expire: 3600 });
+  cacheTag("services");
+  const response = await fetch("http://localhost:3000/services");
 
   if (!response.ok) {
     throw new Error("Falha ao carregar serviços");
@@ -29,18 +35,18 @@ async function ServicesFetcher() {
 export default function Services() {
   return (
     <main className="space-y-8">
-      <div className="border-b border-slate-800 pb-5">
-        <h1 className="text-3xl font-bold tracking-tight text-white">
+      <div className="border-b border-border pb-5">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Serviços Disponíveis
         </h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           Confira todos os serviços cadastrados na plataforma.
         </p>
       </div>
 
       <Suspense
         fallback={
-          <div className="p-12 text-center text-slate-400 animate-pulse">
+          <div className="p-12 text-center text-muted-foreground animate-pulse">
             Carregando catálogo de serviços...
           </div>
         }

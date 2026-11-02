@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import useAuth from "@/store/auth";
+import { invalidateAppointmentsCache } from "@/app/actions/cacheActions";
+import { clearClientAppointmentsCache } from "@/store/appointmentsClientCache";
 
 export interface AvailableSlot {
   startAt: string;
@@ -166,6 +168,8 @@ export default function BookServiceSection({
       setSlots(updatedSlots);
       setSelectedSlot(null);
       setSuccessMessage("Agendamento realizado com sucesso!");
+      clearClientAppointmentsCache(user.id);
+      await invalidateAppointmentsCache(user.id);
     } catch {
       setErrorMessage("Falha de conexão com o servidor ao tentar agendar.");
     } finally {
@@ -175,8 +179,8 @@ export default function BookServiceSection({
 
   if (professionals.length === 0) {
     return (
-      <div className="rounded-2xl bg-slate-900/70 border border-slate-800/80 p-6 text-center">
-        <p className="text-sm text-slate-400">
+      <div className="rounded-2xl bg-card border border-border p-6 text-center shadow-sm">
+        <p className="text-sm text-muted-foreground">
           Este serviço ainda não possui profissionais vinculados para
           agendamento.
         </p>
@@ -185,14 +189,14 @@ export default function BookServiceSection({
   }
 
   return (
-    <section className="rounded-2xl bg-slate-900/70 border border-slate-800/80 p-8 shadow-xl space-y-6">
-      <div className="border-b border-slate-800/80 pb-4">
-        <h2 className="text-xl font-bold text-white">
+    <section className="rounded-2xl bg-card text-card-foreground border border-border p-8 shadow-sm space-y-6">
+      <div className="border-b border-border pb-4">
+        <h2 className="text-xl font-bold text-card-foreground">
           Escolha o Dia e Horário
         </h2>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Selecione um horário disponível abaixo para agendar{" "}
-          <span className="text-slate-200 font-semibold">{serviceName}</span> (
+          <span className="text-foreground font-semibold">{serviceName}</span> (
           {durationMinutes} min).
         </p>
       </div>
@@ -200,7 +204,7 @@ export default function BookServiceSection({
       {/* Seleção de profissional (caso mais de um ofereça o serviço) */}
       {professionals.length > 1 && (
         <div className="space-y-2">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             1. Escolha o Profissional
           </label>
           <div className="flex flex-wrap gap-2.5">
@@ -213,8 +217,8 @@ export default function BookServiceSection({
                   onClick={() => handleSelectProfessional(prof.id)}
                   className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20"
-                      : "bg-slate-950/70 text-slate-300 border-slate-800 hover:border-slate-700"
+                      ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
+                      : "bg-muted text-foreground border-border hover:border-primary/50 hover:bg-accent hover:text-accent-foreground"
                   }`}
                 >
                   {prof.name}
@@ -226,18 +230,18 @@ export default function BookServiceSection({
       )}
 
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm">
+        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm">
           {errorMessage}
         </div>
       )}
 
       {successMessage && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <span>{successMessage}</span>
           {user && (
             <Link
               href={`/appointments/${user.id}`}
-              className="px-4 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 text-xs font-semibold transition-colors text-center"
+              className="px-4 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 text-xs font-semibold transition-colors text-center"
             >
               Ver Meus Agendamentos →
             </Link>
@@ -246,15 +250,15 @@ export default function BookServiceSection({
       )}
 
       {isLoadingSlots ? (
-        <div className="p-10 text-center text-slate-400 animate-pulse bg-slate-950/40 rounded-xl border border-slate-800/60">
+        <div className="p-10 text-center text-muted-foreground animate-pulse bg-muted rounded-xl border border-border">
           Buscando horários disponíveis...
         </div>
       ) : availableDates.length === 0 ? (
-        <div className="p-10 text-center bg-slate-950/40 rounded-xl border border-dashed border-slate-800 space-y-2">
-          <p className="text-sm font-semibold text-slate-300">
+        <div className="p-10 text-center bg-muted rounded-xl border border-dashed border-border space-y-2">
+          <p className="text-sm font-semibold text-foreground">
             Nenhum horário disponível no momento
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             O profissional ainda não abriu horários compatíveis com a duração
             deste serviço ({durationMinutes} min).
           </p>
@@ -263,7 +267,7 @@ export default function BookServiceSection({
         <div className="space-y-6">
           {/* Passo: Selecionar Dia */}
           <div className="space-y-2.5">
-            <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <span className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Dia do Atendimento
             </span>
             <div className="flex gap-3 overflow-x-auto pb-2">
@@ -282,22 +286,28 @@ export default function BookServiceSection({
                     }}
                     className={`min-w-[125px] p-3.5 rounded-xl border text-left transition-all cursor-pointer shrink-0 ${
                       isSelected
-                        ? "bg-indigo-600/20 border-indigo-500 text-white shadow-md shadow-indigo-500/10"
-                        : "bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700"
+                        ? "bg-accent border-primary text-accent-foreground shadow-sm"
+                        : "bg-muted border-border text-foreground hover:border-primary/50"
                     }`}
                   >
-                    <span className="block text-xs uppercase font-semibold text-indigo-400">
+                    <span className="block text-xs uppercase font-semibold text-primary">
                       {dateObj.toLocaleDateString("pt-BR", {
                         weekday: "short",
                       })}
                     </span>
-                    <span className="block text-base font-extrabold text-white mt-0.5">
+                    <span
+                      className={`block text-base font-extrabold mt-0.5 ${
+                        isSelected
+                          ? "text-accent-foreground"
+                          : "text-foreground"
+                      }`}
+                    >
                       {dateObj.toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "short",
                       })}
                     </span>
-                    <span className="block text-[11px] text-slate-400 mt-1">
+                    <span className="block text-[11px] text-muted-foreground mt-1">
                       {count} {count === 1 ? "horário" : "horários"}
                     </span>
                   </button>
@@ -308,7 +318,7 @@ export default function BookServiceSection({
 
           {/* Passo: Selecionar Horário */}
           <div className="space-y-2.5">
-            <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <span className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Horários Livres
             </span>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -324,8 +334,8 @@ export default function BookServiceSection({
                     onClick={() => setSelectedSlot(slot)}
                     className={`py-3 px-3 rounded-xl border text-center font-semibold text-sm transition-all cursor-pointer ${
                       isSelected
-                        ? "bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-500/25"
-                        : "bg-slate-950/70 border-slate-800 text-slate-200 hover:border-indigo-500/50 hover:text-white"
+                        ? "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/25"
+                        : "bg-muted border-border text-foreground hover:border-primary/50 hover:bg-accent hover:text-accent-foreground"
                     }`}
                   >
                     {start.toLocaleTimeString("pt-BR", {
@@ -345,12 +355,12 @@ export default function BookServiceSection({
 
           {/* Resumo e Confirmação */}
           {selectedSlot && (
-            <div className="rounded-xl bg-slate-950/80 border border-indigo-500/30 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="rounded-xl bg-muted border border-primary/30 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="space-y-1">
-                <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
                   Resumo do Agendamento
                 </span>
-                <p className="text-sm text-slate-200 font-semibold">
+                <p className="text-sm text-foreground font-semibold">
                   {new Date(selectedSlot.startAt).toLocaleDateString("pt-BR", {
                     weekday: "long",
                     day: "2-digit",
@@ -363,9 +373,9 @@ export default function BookServiceSection({
                     minute: "2-digit",
                   })}
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Valor:{" "}
-                  <span className="text-emerald-400 font-bold">
+                  <span className="text-primary font-bold">
                     R$ {Number(price).toFixed(2)}
                   </span>
                 </p>
@@ -374,12 +384,12 @@ export default function BookServiceSection({
               {!user ? (
                 <Link
                   href="/auth/user/login"
-                  className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition-all text-center"
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-primary hover:bg-primary/90 text-primary-foreground transition-all text-center"
                 >
                   Entre como Cliente para Agendar
                 </Link>
               ) : user.role === "professional" ? (
-                <span className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-lg">
+                <span className="text-xs text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/25 px-3 py-2 rounded-lg">
                   Apenas contas de cliente podem realizar agendamentos.
                 </span>
               ) : (
@@ -387,7 +397,7 @@ export default function BookServiceSection({
                   type="button"
                   disabled={isBooking}
                   onClick={handleConfirmBooking}
-                  className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground shadow-md shadow-primary/20 transition-all cursor-pointer"
                 >
                   {isBooking ? "Confirmando..." : "Confirmar Agendamento"}
                 </button>

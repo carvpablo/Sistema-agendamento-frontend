@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
     agentFeedback: true,
+    staleTimes: {
+      dynamic: 60,
+      static: 300,
+    },
   },
   cacheComponents: true,
   partialPrefetching: true,

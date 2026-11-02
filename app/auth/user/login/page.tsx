@@ -50,24 +50,24 @@ export default function Auth() {
 
   return (
     <div className="py-10 flex items-center justify-center">
-      <div className="w-full max-w-md rounded-2xl bg-slate-900/70 border border-slate-800 p-8 shadow-xl">
+      <div className="w-full max-w-md rounded-2xl bg-card text-card-foreground border border-border p-8 shadow-sm">
         <div className="mb-6">
           <Link
             href="/"
-            className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+            className="text-xs font-medium text-primary hover:opacity-80 transition-opacity"
           >
             ← Voltar ao início
           </Link>
-          <h1 className="text-2xl font-bold text-white mt-3">
+          <h1 className="text-2xl font-bold text-card-foreground mt-3">
             Login de Cliente
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Entre com sua conta para agendar serviços.
           </p>
         </div>
 
         {errorMessage && (
-          <div className="mb-5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm">
+          <div className="mb-5 p-3.5 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm">
             {errorMessage}
           </div>
         )}
@@ -76,7 +76,7 @@ export default function Auth() {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-slate-300 mb-1.5"
+              className="block text-sm font-medium text-foreground mb-1.5"
             >
               E-mail
             </label>
@@ -85,10 +85,10 @@ export default function Auth() {
               id="email"
               type="email"
               placeholder="seu@email.com"
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              className="w-full px-4 py-2.5 rounded-xl bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
             />
             {errors.email && (
-              <p className="mt-1.5 text-xs text-rose-400">
+              <p className="mt-1.5 text-xs text-destructive">
                 {errors.email.message}
               </p>
             )}
@@ -97,7 +97,7 @@ export default function Auth() {
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-slate-300 mb-1.5"
+              className="block text-sm font-medium text-foreground mb-1.5"
             >
               Senha
             </label>
@@ -116,10 +116,10 @@ export default function Auth() {
               id="password"
               type="password"
               placeholder="••••••••"
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              className="w-full px-4 py-2.5 rounded-xl bg-background border border-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all"
             />
             {errors.password && (
-              <p className="mt-1.5 text-xs text-rose-400">
+              <p className="mt-1.5 text-xs text-destructive">
                 {errors.password.message}
               </p>
             )}
@@ -127,17 +127,17 @@ export default function Auth() {
 
           <button
             disabled={loading}
-            className="w-full py-3 px-4 rounded-xl font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white shadow-lg shadow-indigo-500/20 transition-all cursor-pointer mt-2"
+            className="w-full py-3 px-4 rounded-xl font-semibold bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground shadow-md shadow-primary/20 transition-all cursor-pointer mt-2"
           >
             {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-400">
+        <p className="mt-6 text-center text-sm text-muted-foreground">
           Não tem uma conta?{" "}
           <Link
             href="/auth/user/signin"
-            className="font-semibold text-indigo-400 hover:text-indigo-300"
+            className="font-semibold text-primary hover:opacity-80 transition-opacity"
           >
             Cadastre-se
           </Link>
