@@ -375,7 +375,7 @@ export default function BookServiceSection({
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Valor:{" "}
-                  <span className="text-primary font-bold">
+                  <span className="text-foreground dark:text-white font-bold">
                     R$ {Number(price).toFixed(2)}
                   </span>
                 </p>

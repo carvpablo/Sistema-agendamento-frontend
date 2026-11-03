@@ -1,5 +1,5 @@
 import "./globals.css";
-import Header from "./components/Header";
+import AppShell from "./components/AppShell";
 
 const themeInitScript = `
 (function() {
@@ -31,11 +31,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="min-h-screen flex flex-col bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground">
-        <Header />
-        <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {children}
-        </div>
+      <body className="min-h-screen bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground">
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

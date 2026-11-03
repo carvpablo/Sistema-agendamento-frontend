@@ -1,4 +1,11 @@
+"use client";
+
+import { useSyncExternalStore } from "react";
 import { type Appointment } from "../appointments/[id]/page";
+
+const subscribeNoop = () => () => {};
+const getNow = () => Date.now();
+const getServerNow = () => 0;
 
 const statusStyles: Record<string, string> = {
   SCHEDULED: "bg-accent text-accent-foreground border-primary/25",
@@ -22,9 +29,12 @@ export default function AppointmentList({
   onCancel?: (id: string) => void;
   cancellingId?: string | null;
 }) {
+  const now = useSyncExternalStore(subscribeNoop, getNow, getServerNow);
+
   const canCancelAppointment = (startAt: string) => {
+    if (!now) return false;
     const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
-    return new Date(startAt).getTime() - Date.now() > twentyFourHoursInMs;
+    return new Date(startAt).getTime() - now > twentyFourHoursInMs;
   };
 
   if (appointmentList.length === 0) {
@@ -110,7 +120,7 @@ export default function AppointmentList({
             <span className="text-xs text-muted-foreground">
               Valor do serviço
             </span>
-            <span className="text-lg font-extrabold text-primary">
+            <span className="text-lg font-extrabold text-foreground dark:text-white">
               R$ {Number(appointment.servicePrice).toFixed(2)}
             </span>
           </div>

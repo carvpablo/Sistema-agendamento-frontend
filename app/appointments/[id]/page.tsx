@@ -2,6 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import useAuth from "@/store/auth";
+import {
+  useAppointmentFilter,
+  type AppointmentStatusFilter,
+} from "@/store/appointmentFilter";
 import AppointmentList from "@/app/components/AppointmentList";
 import { fetchCachedAppointments } from "./cachedAppointments";
 import { invalidateAppointmentsCache } from "@/app/actions/cacheActions";
@@ -9,8 +13,6 @@ import {
   getClientAppointmentsCache,
   setClientAppointmentsCache,
 } from "@/store/appointmentsClientCache";
-
-type StatusFilter = "SCHEDULED" | "CANCELLED" | "COMPLETED" | "ALL";
 
 export interface Appointment {
   id: string;
@@ -37,6 +39,7 @@ export interface Appointment {
 
 export default function UserAppointmentsPage() {
   const { user } = useAuth();
+  const { statusFilter, setStatusFilter } = useAppointmentFilter();
   const userId = user?.id;
   const cacheKey = `${user?.role ?? "user"}:${userId ?? ""}`;
   const cachedInitial = userId
@@ -46,7 +49,6 @@ export default function UserAppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>(
     cachedInitial ?? [],
   );
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("SCHEDULED");
   const [isLoading, setIsLoading] = useState<boolean>(!cachedInitial);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
@@ -89,8 +91,10 @@ export default function UserAppointmentsPage() {
         return updated;
       });
       await invalidateAppointmentsCache(userId);
-    } catch (err: any) {
-      setError(err.message || "Erro ao cancelar agendamento.");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "Erro ao cancelar agendamento.",
+      );
     } finally {
       setCancellingId(null);
     }
@@ -113,9 +117,13 @@ export default function UserAppointmentsPage() {
         const data = await fetchCachedAppointments(userId, user?.role);
         setClientAppointmentsCache(cacheKey, data);
         setAppointments(data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!existingCache) {
-          setError(err.message || "Erro ao carregar agendamentos.");
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Erro ao carregar agendamentos.",
+          );
         }
       } finally {
         setIsLoading(false);
@@ -125,15 +133,19 @@ export default function UserAppointmentsPage() {
     fetchAppointments();
   }, [userId, user?.role, cacheKey]);
 
+  const isProfessional = user?.role === "professional";
+
   return (
     <main className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Meus Agendamentos
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            {isProfessional ? "Agenda de Clientes" : "Meus Agendamentos"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Acompanhe o histórico e status dos seus horários marcados.
+            {isProfessional
+              ? "Acompanhe os atendimentos marcados pelos seus clientes."
+              : "Acompanhe o histórico e status dos seus horários marcados."}
           </p>
         </div>
 
@@ -147,8 +159,10 @@ export default function UserAppointmentsPage() {
           <select
             id="status-filter"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-            className="px-4 py-2.5 rounded-xl bg-card border border-input text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring hover:border-primary/50 transition-all cursor-pointer shadow-xs"
+            onChange={(e) =>
+              setStatusFilter(e.target.value as AppointmentStatusFilter)
+            }
+            className="px-4 py-2 rounded-xl bg-card border border-input text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring hover:border-primary/50 transition-all cursor-pointer"
           >
             <option value="SCHEDULED">Agendados</option>
             <option value="CANCELLED">Cancelados</option>

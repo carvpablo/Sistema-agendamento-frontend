@@ -124,7 +124,7 @@ export default function ServiceList({
                   <span className="text-xs text-muted-foreground block">
                     Valor
                   </span>
-                  <span className="text-xl font-extrabold text-primary">
+                  <span className="text-xl font-extrabold text-foreground dark:text-white">
                     R$ {Number(service.price).toFixed(2)}
                   </span>
                 </div>

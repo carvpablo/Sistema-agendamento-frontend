@@ -61,7 +61,7 @@ export default async function ServiceDetails({
 
           <div className="sm:text-right shrink-0">
             <span className="text-xs text-muted-foreground block">Preço</span>
-            <span className="text-3xl font-extrabold text-primary">
+            <span className="text-3xl font-extrabold text-foreground dark:text-white">
               R$ {Number(service.price).toFixed(2)}
             </span>
           </div>
