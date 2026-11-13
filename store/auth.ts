@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -26,5 +27,18 @@ const useAuth = create<AuthStore>()(
     },
   ),
 );
+
+/**
+ * Indica se a sessão salva no navegador já foi lida. Antes disso (HTML do
+ * servidor e primeira hidratação) `user` é sempre null, e isso não significa
+ * "visitante": quem consome deve mostrar um estado neutro em vez de decidir.
+ */
+export function useAuthHydrated(): boolean {
+  return useSyncExternalStore(
+    (onChange) => useAuth.persist.onFinishHydration(onChange),
+    () => useAuth.persist.hasHydrated(),
+    () => false,
+  );
+}
 
 export default useAuth;

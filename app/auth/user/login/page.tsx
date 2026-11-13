@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import useAuth from "@/store/auth";
 import { type LoginFormType } from "@/types/types";
+import { API_URL } from "@/lib/api";
 
 export default function Auth() {
   const {
@@ -22,7 +23,7 @@ export default function Auth() {
   async function onSubmit(data: LoginFormType) {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/auth/user/login", {
+      const response = await fetch(`${API_URL}/auth/user/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

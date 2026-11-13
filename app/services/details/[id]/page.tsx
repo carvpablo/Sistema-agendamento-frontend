@@ -2,6 +2,8 @@ import Link from "next/link";
 import { type ProfessionalServicesProps } from "../../[id]/page";
 import { cacheLife, cacheTag } from "next/cache";
 import BookServiceSection from "@/app/components/BookServiceSection";
+import { formatCurrency } from "@/lib/format";
+import { API_URL } from "@/lib/api";
 
 export interface ServiceDetail {
   id: string;
@@ -25,7 +27,7 @@ export default async function ServiceDetails({
   cacheLife("minutes");
   const { id } = await params;
   cacheTag("services", `service:${id}`);
-  const response = await fetch(`http://localhost:3000/services/${id}`);
+  const response = await fetch(`${API_URL}/services/${id}`);
 
   if (!response.ok) {
     throw new Error("Falha ao carregar dados do serviço");
@@ -62,7 +64,7 @@ export default async function ServiceDetails({
           <div className="sm:text-right shrink-0">
             <span className="text-xs text-muted-foreground block">Preço</span>
             <span className="text-3xl font-extrabold text-foreground dark:text-white">
-              R$ {Number(service.price).toFixed(2)}
+              {formatCurrency(service.price)}
             </span>
           </div>
         </div>

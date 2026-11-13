@@ -46,3 +46,13 @@ next-env.d.ts
 .impeccable/
 .gemini/
 .codex/
+
+# Next.js 16 agent file
+AGENTS.md
+
+# IDEs & Editores
+.vscode/
+.idea/
+# Windows
+Thumbs.db
+desktop.ini

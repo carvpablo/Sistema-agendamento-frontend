@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import useAuth from "@/store/auth";
 import { type LoginFormType } from "@/types/types";
+import { API_URL } from "@/lib/api";
 
 export default function Auth() {
   const {
@@ -23,7 +24,7 @@ export default function Auth() {
     setLoading(true);
     try {
       const response = await fetch(
-        "http://localhost:3000/auth/professional/login",
+        `${API_URL}/auth/professional/login`,
         {
           method: "POST",
           headers: {

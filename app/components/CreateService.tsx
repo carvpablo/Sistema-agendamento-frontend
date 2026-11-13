@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { type CreateServiceFormType } from "@/types/types";
 import { invalidateServicesCache } from "@/app/actions/cacheActions";
 import useAuth from "@/store/auth";
+import { API_URL } from "@/lib/api";
 
 interface CreateServiceProps {
   onSuccess?: () => void;
@@ -31,7 +32,7 @@ export default function CreateService({ onSuccess }: CreateServiceProps) {
     setSuccessMessage(null);
 
     try {
-      const response = await fetch("http://localhost:3000/services", {
+      const response = await fetch(`${API_URL}/services`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

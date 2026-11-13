@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import useAuth from "@/store/auth";
+import { formatCurrency } from "@/lib/format";
+import { API_URL } from "@/lib/api";
 import { invalidateAppointmentsCache } from "@/app/actions/cacheActions";
 import { clearClientAppointmentsCache } from "@/store/appointmentsClientCache";
 
@@ -55,7 +57,7 @@ export default function BookServiceSection({
     async function loadSlots() {
       try {
         const response = await fetch(
-          `http://localhost:3000/professionals/${selectedProfessionalId}/available-slots?serviceId=${serviceId}`,
+          `${API_URL}/professionals/${selectedProfessionalId}/available-slots?serviceId=${serviceId}`,
           {
             cache: "no-store",
           },
@@ -138,7 +140,7 @@ export default function BookServiceSection({
     setSuccessMessage(null);
 
     try {
-      const response = await fetch("http://localhost:3000/appointments", {
+      const response = await fetch(`${API_URL}/appointments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -230,7 +232,10 @@ export default function BookServiceSection({
       )}
 
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm">
+        <div
+          role="alert"
+          className="p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive dark:text-red-400 text-sm"
+        >
           {errorMessage}
         </div>
       )}
@@ -290,7 +295,7 @@ export default function BookServiceSection({
                         : "bg-muted border-border text-foreground hover:border-primary/50"
                     }`}
                   >
-                    <span className="block text-xs uppercase font-semibold text-primary">
+                    <span className="block text-xs uppercase font-semibold text-primary dark:text-accent-foreground">
                       {dateObj.toLocaleDateString("pt-BR", {
                         weekday: "short",
                       })}
@@ -357,7 +362,7 @@ export default function BookServiceSection({
           {selectedSlot && (
             <div className="rounded-xl bg-muted border border-primary/30 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="space-y-1">
-                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary dark:text-accent-foreground">
                   Resumo do Agendamento
                 </span>
                 <p className="text-sm text-foreground font-semibold">
@@ -375,8 +380,8 @@ export default function BookServiceSection({
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Valor:{" "}
-                  <span className="text-foreground dark:text-white font-bold">
-                    R$ {Number(price).toFixed(2)}
+                  <span className="text-foreground font-bold tabular-nums">
+                    {formatCurrency(price)}
                   </span>
                 </p>
               </div>

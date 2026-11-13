@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { type SigninFormType } from "@/types/types";
 import useAuth from "@/store/auth";
+import { API_URL } from "@/lib/api";
 
 export default function Signin() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -23,7 +24,7 @@ export default function Signin() {
     try {
       setIsLoading(true);
       const response = await fetch(
-        "http://localhost:3000/auth/professional/signin",
+        `${API_URL}/auth/professional/signin`,
         {
           method: "POST",
           headers: {

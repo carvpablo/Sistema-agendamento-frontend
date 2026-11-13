@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import ServiceList from "../components/ServiceList";
-import { cacheLife, cacheTag } from "next/cache";
+import { API_URL } from "@/lib/api";
 
 export interface Service {
   id: string;
@@ -18,10 +18,9 @@ export interface Service {
 }
 
 async function ServicesFetcher() {
-  "use cache";
-  cacheLife({ stale: 300, revalidate: 600, expire: 3600 });
-  cacheTag("services");
-  const response = await fetch("http://localhost:3000/services");
+  const response = await fetch(`${API_URL}/services`, {
+    cache: "no-store",
+  });
 
   if (!response.ok) {
     throw new Error("Falha ao carregar serviços");

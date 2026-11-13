@@ -1,13 +1,30 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react";
 import useAuth from "@/store/auth";
+import { type Availability } from "@/types/types";
+import { API_URL } from "@/lib/api";
+import { Calendar } from "@/components/ui/calendar";
 import {
-  type Availability,
-  type CreateAvailabilityFormType,
-} from "@/types/types";
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  InputGroup,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+
+function parseTimeParts(timeStr: string): [number, number, number] {
+  const parts = timeStr.split(":").map(Number);
+  return [parts[0] || 0, parts[1] || 0, parts[2] || 0];
+}
 
 export default function AvailabilityPage() {
   const { user } = useAuth();
@@ -17,35 +34,21 @@ export default function AvailabilityPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<CreateAvailabilityFormType>();
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [startTime, setStartTime] = useState<string>("09:00:00");
+  const [endTime, setEndTime] = useState<string>("18:00:00");
 
-  // Trava o ano com no máximo 4 dígitos caso o usuário digite números a mais
-  function enforceFourDigitYear(e: React.SyntheticEvent<HTMLInputElement>) {
-    const input = e.currentTarget;
-    const value = input.value;
-    if (!value) return;
-
-    const [datePart, timePart] = value.split("T");
-    if (!datePart) return;
-
-    const parts = datePart.split("-");
-    if (parts[0] && parts[0].length > 4) {
-      parts[0] = parts[0].slice(0, 4);
-      input.value = `${parts.join("-")}${timePart ? `T${timePart}` : ""}`;
-    }
-  }
+  const markedDates = useMemo(
+    () => availabilities.map((item) => new Date(item.startAt)),
+    [availabilities],
+  );
 
   async function fetchAvailabilities() {
     if (!user || user.role !== "professional") return;
     try {
       setIsLoading(true);
       const response = await fetch(
-        `http://localhost:3000/professionals/${user.id}/availability`,
+        `${API_URL}/professionals/${user.id}/availability`,
         {
           credentials: "include",
           cache: "no-store",
@@ -77,7 +80,7 @@ export default function AvailabilityPage() {
     async function loadInitialAvailabilities() {
       try {
         const response = await fetch(
-          `http://localhost:3000/professionals/${user!.id}/availability`,
+          `${API_URL}/professionals/${user!.id}/availability`,
           {
             credentials: "include",
             cache: "no-store",
@@ -114,35 +117,43 @@ export default function AvailabilityPage() {
     };
   }, [user]);
 
-  async function handleCreateAvailability(data: CreateAvailabilityFormType) {
+  async function handleCreateAvailability(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     if (!user?.id || user.role !== "professional") return;
-    setIsSubmitting(true);
+
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    const startDate = new Date(data.startAt);
-    const endDate = new Date(data.endAt);
-
-    if (
-      startDate.getFullYear() < 1900 ||
-      startDate.getFullYear() > 9999 ||
-      endDate.getFullYear() < 1900 ||
-      endDate.getFullYear() > 9999
-    ) {
-      setErrorMessage("O ano deve conter exatamente 4 dígitos válidos.");
-      setIsSubmitting(false);
+    if (!date) {
+      setErrorMessage("Selecione uma data no calendário.");
       return;
     }
+
+    if (!startTime || !endTime) {
+      setErrorMessage("Informe o horário de início e de término.");
+      return;
+    }
+
+    const [startH, startM, startS] = parseTimeParts(startTime);
+    const [endH, endM, endS] = parseTimeParts(endTime);
+
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+
+    const startDate = new Date(year, month, day, startH, startM, startS);
+    const endDate = new Date(year, month, day, endH, endM, endS);
 
     if (startDate >= endDate) {
       setErrorMessage("O horário final deve ser posterior ao horário inicial.");
-      setIsSubmitting(false);
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       const response = await fetch(
-        "http://localhost:3000/professionals/availability",
+        `${API_URL}/professionals/availability`,
         {
           method: "POST",
           headers: {
@@ -165,7 +176,6 @@ export default function AvailabilityPage() {
       }
 
       setSuccessMessage("Horário de disponibilidade cadastrado com sucesso!");
-      reset();
       fetchAvailabilities();
     } catch {
       setErrorMessage("Não foi possível conectar ao servidor.");
@@ -179,7 +189,7 @@ export default function AvailabilityPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/professionals/availability/${id}`,
+        `${API_URL}/professionals/availability/${id}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -253,79 +263,78 @@ export default function AvailabilityPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* Formulário para criar novo horário */}
-        <div className="lg:col-span-1 rounded-2xl bg-card text-card-foreground border border-border p-6 shadow-sm space-y-5">
-          <div>
-            <h2 className="text-lg font-bold text-card-foreground">
-              Adicionar Horário
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              Informe a data e o intervalo de início e fim.
-            </p>
-          </div>
+        {/* Card com Calendário e seleção de horário */}
+        <div className="lg:col-span-1 flex justify-center lg:justify-start">
+          <Card size="sm" className="w-fit">
+            <CardHeader className="pb-1">
+              <CardTitle>Adicionar Horário</CardTitle>
+              <CardDescription>
+                Escolha o dia no calendário e o intervalo de atendimento.
+              </CardDescription>
+            </CardHeader>
 
-          <form
-            onSubmit={handleSubmit(handleCreateAvailability)}
-            className="space-y-4"
-          >
-            <div>
-              <label
-                htmlFor="startAt"
-                className="block text-xs font-semibold uppercase tracking-wider text-foreground mb-1.5"
-              >
-                Início do Atendimento
-              </label>
-              <input
-                id="startAt"
-                type="datetime-local"
-                min="2024-01-01T00:00"
-                max="9999-12-31T23:59"
-                onInput={enforceFourDigitYear}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-                {...register("startAt", {
-                  required: "Horário inicial é obrigatório.",
-                })}
+            <CardContent>
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                markedDates={markedDates}
+                disablePast
+                className="p-0"
               />
-              {errors.startAt && (
-                <p className="mt-1 text-xs text-destructive">
-                  {errors.startAt.message}
-                </p>
-              )}
-            </div>
+            </CardContent>
 
-            <div>
-              <label
-                htmlFor="endAt"
-                className="block text-xs font-semibold uppercase tracking-wider text-foreground mb-1.5"
+            <CardFooter className="border-t bg-card flex-col items-stretch gap-4">
+              <form
+                onSubmit={handleCreateAvailability}
+                className="w-full space-y-4"
               >
-                Término do Atendimento
-              </label>
-              <input
-                id="endAt"
-                type="datetime-local"
-                min="2024-01-01T00:00"
-                max="9999-12-31T23:59"
-                onInput={enforceFourDigitYear}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-background border border-input text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-                {...register("endAt", {
-                  required: "Horário final é obrigatório.",
-                })}
-              />
-              {errors.endAt && (
-                <p className="mt-1 text-xs text-destructive">
-                  {errors.endAt.message}
-                </p>
-              )}
-            </div>
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel htmlFor="time-from">
+                      Horário de Início
+                    </FieldLabel>
+                    <InputGroup>
+                      <InputGroupInput
+                        id="time-from"
+                        type="time"
+                        step="1"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        required
+                        className="[&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                      />
+                    </InputGroup>
+                  </Field>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-2.5 px-4 rounded-xl font-semibold bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground shadow-md shadow-primary/25 transition-all text-sm cursor-pointer"
-            >
-              {isSubmitting ? "Salvando..." : "+ Adicionar Disponibilidade"}
-            </button>
-          </form>
+                  <Field>
+                    <FieldLabel htmlFor="time-to">
+                      Horário de Término
+                    </FieldLabel>
+                    <InputGroup>
+                      <InputGroupInput
+                        id="time-to"
+                        type="time"
+                        step="1"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        required
+                        className="[&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                      />
+                    </InputGroup>
+                  </Field>
+                </FieldGroup>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !date}
+                  className="w-full py-2.5 px-4 rounded-xl font-semibold bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground shadow-sm transition-all text-sm cursor-pointer"
+                >
+                  {isSubmitting ? "Salvando..." : "+ Adicionar Disponibilidade"}
+                </button>
+              </form>
+            </CardFooter>
+          </Card>
         </div>
 
         {/* Lista de disponibilidades cadastradas */}
@@ -352,8 +361,8 @@ export default function AvailabilityPage() {
                 Nenhuma disponibilidade cadastrada
               </h3>
               <p className="mt-1 text-xs text-muted-foreground">
-                Cadastre seus horários ao lado para permitir que clientes façam
-                agendamentos.
+                Selecione um dia no calendário ao lado para liberar horários de
+                atendimento.
               </p>
             </div>
           ) : (
@@ -384,7 +393,7 @@ export default function AvailabilityPage() {
                         </button>
                       </div>
 
-                      <p className="text-lg font-extrabold text-card-foreground pt-1">
+                      <p className="text-lg font-extrabold text-card-foreground pt-1 tabular-nums">
                         {startDate.toLocaleTimeString("pt-BR", {
                           hour: "2-digit",
                           minute: "2-digit",

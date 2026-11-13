@@ -2,6 +2,7 @@ import ServiceList from "@/app/components/ServiceList";
 import Link from "next/link";
 import { Suspense } from "react";
 import { cacheLife, cacheTag } from "next/cache";
+import { API_URL } from "@/lib/api";
 
 export interface ProfessionalServicesProps {
   params: Promise<{
@@ -20,7 +21,7 @@ async function MyServicesFetcher({
   cacheTag("services", `professional-services:${id}`);
 
   const response = await fetch(
-    `http://localhost:3000/professionals/${id}/services`,
+    `${API_URL}/professionals/${id}/services`,
   );
 
   if (!response.ok) {

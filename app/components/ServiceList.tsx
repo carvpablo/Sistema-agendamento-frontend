@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { formatCurrency } from "@/lib/format";
 import { type Service } from "../services/page";
 
 function normalizeText(text: string) {
@@ -91,7 +92,7 @@ export default function ServiceList({
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-lg font-bold text-card-foreground group-hover:text-primary transition-colors">
+                  <h3 className="text-lg font-bold text-card-foreground group-hover:text-primary dark:group-hover:text-accent-foreground transition-colors">
                     {service.name}
                   </h3>
                   <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground border border-border">
@@ -124,8 +125,8 @@ export default function ServiceList({
                   <span className="text-xs text-muted-foreground block">
                     Valor
                   </span>
-                  <span className="text-xl font-extrabold text-foreground dark:text-white">
-                    R$ {Number(service.price).toFixed(2)}
+                  <span className="text-xl font-extrabold text-foreground tabular-nums">
+                    {formatCurrency(service.price)}
                   </span>
                 </div>
 

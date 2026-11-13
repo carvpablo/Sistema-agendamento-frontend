@@ -1,5 +1,15 @@
+import type { Metadata } from "next";
 import "./globals.css";
 import AppShell from "./components/AppShell";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Agendamentos! | Gestão de Horários e Serviços",
+    template: "%s | Agendamentos!",
+  },
+  description:
+    "Conectamos clientes aos melhores profissionais. Confira preços transparentes, escolha horários livres sem conflito e acompanhe sua agenda em um único lugar.",
+};
 
 const themeInitScript = `
 (function() {
@@ -26,7 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:wght@400;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
