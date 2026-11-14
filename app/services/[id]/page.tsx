@@ -30,7 +30,7 @@ async function MyServicesFetcher({
 
   const result = await response.json();
 
-  return <ServiceList serviceList={result} />;
+  return <ServiceList serviceList={result} ownerProfessionalId={id} />;
 }
 
 export default function MyServices({ params }: ProfessionalServicesProps) {
@@ -48,7 +48,7 @@ export default function MyServices({ params }: ProfessionalServicesProps) {
 
         <Link
           href="/services/create"
-          className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm shadow-primary/20 transition-all"
+          className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
         >
           + Novo Serviço
         </Link>
