@@ -2,10 +2,16 @@
 
 import { updateTag } from "next/cache";
 
-export async function invalidateServicesCache(professionalId?: string) {
+export async function invalidateServicesCache(
+  professionalId?: string,
+  serviceId?: string,
+) {
   updateTag("services");
   if (professionalId) {
     updateTag(`professional-services:${professionalId}`);
+  }
+  if (serviceId) {
+    updateTag(`service:${serviceId}`);
   }
 }
 
